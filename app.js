@@ -38,7 +38,7 @@ function speichern() {
 
 const zustand = laden();
 let startLive = true;
-let tagManuell = null; // null = automatisch
+let tagManuell = null; // null = automatisch, sonst das gewählte Kalenderdatum (Mitternacht)
 
 const $ = (id) => document.getElementById(id);
 const el = {
@@ -89,6 +89,25 @@ function tagWort(datum, bezug) {
   return datum.toLocaleDateString('de-AT', { weekday: 'long', day: 'numeric', month: 'numeric' });
 }
 
+const MAX_DAUER_MIN = 12 * 60 + 59;
+
+// Dauer aus Stunden- und Minutenfeld. Minuten über 59 zählen als Stunden (90 Min. = 1 h 30 Min.).
+// Mit `zurueckschreiben` wird der normalisierte Wert in die Felder übernommen, damit Anzeige und Rechnung übereinstimmen.
+function dauerAusFeldern(hInput, mInput, zurueckschreiben = false) {
+  const h = Math.max(0, parseInt(hInput.value, 10) || 0);
+  const m = Math.max(0, parseInt(mInput.value, 10) || 0);
+  const gesamt = Math.min(MAX_DAUER_MIN, h * 60 + m);
+  if (zurueckschreiben) {
+    hInput.value = Math.floor(gesamt / 60);
+    mInput.value = gesamt % 60;
+  }
+  return gesamt;
+}
+
+function tagesbeginn(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
 function zahl(input, min, max, standard) {
   const n = parseInt(input.value, 10);
   if (Number.isNaN(n)) return standard;
@@ -118,7 +137,14 @@ function aktualisieren() {
     : 'Feste Startzeit. „Jetzt“ setzt sie zurück.';
 
   const wunsch = el.endzeit.value || zustand.endzeit;
-  const tag = tagManuell ?? autoTag(start, wunsch, zustand.dauerMin, zustand.reserveMin);
+  if (tagManuell !== null) {
+    // Gewählter Tag ist ein festes Datum; springt die Startzeit über Mitternacht, bleibt es dasselbe Datum.
+    const offset = Math.round((tagManuell - tagesbeginn(start)) / 86400000);
+    if (offset < 0 || offset > 2) tagManuell = null;
+  }
+  const tag = tagManuell === null
+    ? autoTag(start, wunsch, zustand.dauerMin, zustand.reserveMin)
+    : Math.round((tagManuell - tagesbeginn(start)) / 86400000);
   el.segmente.forEach((b) => b.setAttribute('aria-checked', String(Number(b.dataset.tag) === tag)));
   el.tagInfo.textContent = tagManuell === null ? `${TAGE[tag]} automatisch gewählt.` : '';
 
@@ -140,7 +166,7 @@ function aktualisieren() {
     hinweis = `${wunsch} ist ${tagWort(ende, start)} nicht zu schaffen. Sofort starten oder einen späteren Tag wählen.`;
   } else {
     const vor = r.minutenVorWunsch;
-    el.fertig.textContent = `Fertig ${fertigTag} um ${uhrzeit(r.fertig)}` + (vor > 0 && r.status !== 'ueberMax' ? `,${minutenText(vor)} vor deiner Wunschzeit` : '');
+    el.fertig.textContent = `Fertig ${fertigTag} um ${uhrzeit(r.fertig)}` + (vor > 0 && r.status !== 'ueberMax' ? `, ${minutenText(vor)} vor deiner Wunschzeit` : '');
     if (r.status === 'sofort') hinweis = 'Ohne Verzögerung sofort starten.';
     if (r.status === 'ueberMax') hinweis = `Mehr als ${zustand.maxStunden} h geht nicht. Die Wäsche ist dann ${minutenText(vor)} zu früh fertig.`;
   }
@@ -216,13 +242,15 @@ function renderListe(fokusId) {
     m.value = prog.dauerMin % 60;
 
     name.addEventListener('input', () => { prog.name = name.value; speichern(); renderChips(); });
-    const zeitGeaendert = () => {
-      prog.dauerMin = zahl(h, 0, 12, 0) * 60 + zahl(m, 0, 59, 0);
+    const zeitGeaendert = (e) => {
+      prog.dauerMin = dauerAusFeldern(h, m, e.type === 'change');
       speichern();
       renderChips();
     };
-    h.addEventListener('input', zeitGeaendert);
-    m.addEventListener('input', zeitGeaendert);
+    for (const f of [h, m]) {
+      f.addEventListener('input', zeitGeaendert);
+      f.addEventListener('change', zeitGeaendert);
+    }
 
     const hoch = li.querySelector('.hoch');
     const runter = li.querySelector('.runter');
@@ -294,17 +322,20 @@ el.endzeit.addEventListener('input', () => {
 });
 
 el.segmente.forEach((b) => b.addEventListener('click', () => {
-  tagManuell = Number(b.dataset.tag);
+  const start = tagesbeginn(startzeitpunkt());
+  tagManuell = new Date(start.getFullYear(), start.getMonth(), start.getDate() + Number(b.dataset.tag));
   aktualisieren();
 }));
 
-const dauerGeaendert = () => {
-  zustand.dauerMin = zahl(el.dauerH, 0, 12, 0) * 60 + zahl(el.dauerM, 0, 59, 0);
+const dauerGeaendert = (e) => {
+  zustand.dauerMin = dauerAusFeldern(el.dauerH, el.dauerM, e.type === 'change');
   speichern();
   aktualisieren();
 };
-el.dauerH.addEventListener('input', dauerGeaendert);
-el.dauerM.addEventListener('input', dauerGeaendert);
+for (const f of [el.dauerH, el.dauerM]) {
+  f.addEventListener('input', dauerGeaendert);
+  f.addEventListener('change', dauerGeaendert);
+}
 
 el.startzeit.addEventListener('input', () => {
   if (!el.startzeit.value) return;
@@ -356,3 +387,7 @@ document.addEventListener('visibilitychange', () => {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
+
+// Begrenzte Werte beim Verlassen des Feldes zurückschreiben, damit Anzeige und Rechnung übereinstimmen.
+el.reserve.addEventListener('change', () => { el.reserve.value = zustand.reserveMin; });
+el.max.addEventListener('change', () => { el.max.value = zustand.maxStunden; });
