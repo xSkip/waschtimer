@@ -197,54 +197,62 @@ function aktualisieren() {
 
 let letztesErgebnis = null;
 
+const APP_VERSION = '5';
+
+function googleZeit(d) {
+  return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+}
+
+let dateiUrl = null;
+
+// Öffnet ein Auswahlfenster mit mehreren Wegen. iOS blockiert in Home-Bildschirm-Apps Kalenderdateien,
+// die im Browser erzeugt werden; welcher Weg auf einem Gerät klappt, ist unterschiedlich.
 function kalenderEintragOeffnen() {
   if (!letztesErgebnis) return;
   const { r, start, dauerMin } = letztesErgebnis;
+  const titel = 'Wäsche fertig';
   const startText = r.stunden > 0
     ? `Startverzögerung ${r.stunden} h, eingestellt ${tagWort(start, new Date())} um ${uhrzeit(start)}.`
     : `Ohne Startverzögerung gestartet ${tagWort(start, new Date())} um ${uhrzeit(start)}.`;
-  const ics = kalenderEintrag({
-    fertig: r.fertig,
-    titel: 'Wäsche fertig',
-    beschreibung: `${startText} Programmdauer ${dauerText(dauerMin)}.`,
-  });
-  if (istIOS) {
-    kalenderUeberServiceWorker(ics);
-    return;
-  }
-  // Andere Geräte: Datei herunterladen und mit dem Kalender öffnen.
-  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'waesche-fertig.ics';
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
-}
+  const beschreibung = `${startText} Programmdauer ${dauerText(dauerMin)}.`;
+  const ics = kalenderEintrag({ fertig: r.fertig, titel, beschreibung });
 
-// iPhone/iPad: iOS blockiert Blob- und data:-Links für Kalenderdateien, vor allem in der
-// Home-Bildschirm-App. Was funktioniert, ist eine echte https-Adresse derselben Seite, die
-// text/calendar liefert. GitHub Pages kann das nicht dynamisch, deshalb beantwortet der
-// Service Worker die Adresse ./termin.ics?d=… mit dem übergebenen Termin.
-async function kalenderUeberServiceWorker(ics) {
-  const info = $('kalender-info');
-  info.hidden = true;
-  const ziel = `./termin.ics?d=${encodeURIComponent(ics)}`;
-  try {
-    // Prüfen, ob der aktuelle Service Worker die Adresse schon kennt (nach einem Update evtl. noch nicht).
-    const probe = await fetch('./termin.ics?probe=1', { cache: 'no-store' });
-    if (!(probe.headers.get('content-type') || '').startsWith('text/calendar')) throw new Error('alt');
-  } catch {
-    navigator.serviceWorker?.getRegistration().then((reg) => reg?.update()).catch(() => {});
-    info.textContent = 'Die App wird gerade aktualisiert. Bitte schließe sie ganz, öffne sie neu und tippe noch einmal.';
-    info.hidden = false;
-    return;
+  $('kalender-termin').textContent = `${titel}: ${tagWort(r.fertig, new Date())} um ${uhrzeit(r.fertig)}, mit Erinnerung`;
+  $('kalender-info').textContent = '';
+
+  // 1. Apple Kalender: echte Adresse derselben Seite, beantwortet vom Service Worker (text/calendar).
+  $('weg-apple').href = `./termin.ics?d=${encodeURIComponent(ics)}`;
+
+  // 2. Teilen-Menü mit der Datei (wenn das Gerät Dateien teilen kann).
+  const datei = new File([ics], 'waesche-fertig.ics', { type: 'text/calendar' });
+  const teilen = $('weg-teilen');
+  teilen.hidden = !(navigator.canShare && navigator.canShare({ files: [datei] }));
+  teilen.onclick = () => {
+    navigator.share({ files: [datei], title: titel }).catch((e) => {
+      if (e.name !== 'AbortError') $('kalender-info').textContent = 'Teilen hat nicht geklappt.';
+    });
+  };
+
+  // 3. Google Kalender im Browser.
+  const ende = new Date(r.fertig.getTime() + 15 * 60000);
+  $('weg-google').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    + `&text=${encodeURIComponent(titel)}&dates=${googleZeit(r.fertig)}/${googleZeit(ende)}`
+    + `&details=${encodeURIComponent(beschreibung)}`;
+
+  // 4. Datei herunterladen (Computer, Android).
+  if (dateiUrl) URL.revokeObjectURL(dateiUrl);
+  dateiUrl = URL.createObjectURL(datei);
+  $('weg-datei').href = dateiUrl;
+  $('weg-datei').hidden = istIOS;
+
+  if (!navigator.serviceWorker?.controller) {
+    $('kalender-info').textContent = 'Hinweis: Die App ist noch nicht vollständig geladen. Falls „Apple Kalender“ nicht reagiert, schließe die App ganz und öffne sie neu.';
   }
-  window.location.href = ziel;
+  $('kalender-dialog').showModal();
 }
 
 $('kalender').addEventListener('click', kalenderEintragOeffnen);
+$('version').textContent = `Version ${APP_VERSION}`;
 
 // ---------- Programme (Schnellwahl) ----------
 
