@@ -1,4 +1,5 @@
 import { berechne, autoTag, endzeitpunkt } from './calc.js';
+import { kalenderEintrag } from './ics.js';
 
 const SPEICHER_KEY = 'waschtimer.v1';
 const TAGE = ['Heute', 'Morgen', 'Übermorgen'];
@@ -13,8 +14,9 @@ const STANDARD = {
   dauerMin: 180,
   endzeit: '17:30',
   reserveMin: 10,
-  maxStunden: 24,
+  maxStunden: 23,
   installHinweisAus: false,
+  datenVersion: 2,
 };
 
 function laden() {
@@ -22,6 +24,9 @@ function laden() {
     const roh = localStorage.getItem(SPEICHER_KEY);
     if (!roh) return structuredClone(STANDARD);
     const daten = JSON.parse(roh);
+    // Version 1 hatte 24 h als Standard-Maximum; Marios Maschine kann 23 h.
+    if (!daten.datenVersion && daten.maxStunden === 24) daten.maxStunden = 23;
+    daten.datenVersion = STANDARD.datenVersion;
     return { ...structuredClone(STANDARD), ...daten };
   } catch {
     return structuredClone(STANDARD);
@@ -184,8 +189,39 @@ function aktualisieren() {
     el.alternative.hidden = true;
   }
 
+  letztesErgebnis = { r, start, dauerMin: zustand.dauerMin };
   renderChips();
 }
+
+// ---------- Kalendereintrag ----------
+
+let letztesErgebnis = null;
+
+function kalenderEintragOeffnen() {
+  if (!letztesErgebnis) return;
+  const { r, start, dauerMin } = letztesErgebnis;
+  const startText = r.stunden > 0
+    ? `Startverzögerung ${r.stunden} h, eingestellt ${tagWort(start, new Date())} um ${uhrzeit(start)}.`
+    : `Ohne Startverzögerung gestartet ${tagWort(start, new Date())} um ${uhrzeit(start)}.`;
+  const ics = kalenderEintrag({
+    fertig: r.fertig,
+    titel: 'Wäsche fertig',
+    beschreibung: `${startText} Programmdauer ${dauerText(dauerMin)}.`,
+  });
+  const datei = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(datei);
+  const a = document.createElement('a');
+  a.href = url;
+  // iPhone/iPad: ohne download-Attribut öffnet Safari die Kalendervorschau mit „Hinzufügen“.
+  // Andere Geräte: Datei herunterladen und mit dem Kalender öffnen.
+  if (!istIOS) a.download = 'waesche-fertig.ics';
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+$('kalender').addEventListener('click', kalenderEintragOeffnen);
 
 // ---------- Programme (Schnellwahl) ----------
 
@@ -353,7 +389,7 @@ el.reserve.addEventListener('input', () => {
   aktualisieren();
 });
 el.max.addEventListener('input', () => {
-  zustand.maxStunden = zahl(el.max, 1, 99, 24);
+  zustand.maxStunden = zahl(el.max, 1, 99, 23);
   speichern();
   aktualisieren();
 });

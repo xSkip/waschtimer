@@ -78,6 +78,14 @@ p { margin: 0; }
   font-weight: 600;
 }
 .ergebnis .alternative { margin-top: 8px; font-size: 14px; opacity: .85; }
+.kalender-knopf {
+  margin-top: 14px;
+  font: inherit; font-size: 16px; font-weight: 600;
+  width: 100%; min-height: 44px;
+  border: 1.5px solid currentColor; border-radius: 12px;
+  background: rgba(255,255,255,.14); color: inherit;
+}
+.kalender-knopf:active { background: rgba(255,255,255,.28); }
 
 .karte {
   background: var(--karte);
