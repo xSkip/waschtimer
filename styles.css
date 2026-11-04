@@ -1,0 +1,199 @@
+:root {
+  --bg: #f2f4f8;
+  --karte: #ffffff;
+  --text: #111827;
+  --gedimmt: #5b6474;
+  --linie: #dfe3ea;
+  --akzent: #1d6fd8;
+  --akzent-text: #ffffff;
+  --akzent-weich: #e3eefc;
+  --warnung: #b45309;
+  --warnung-weich: #fef3c7;
+  --gefahr: #c0262d;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b111b;
+    --karte: #162131;
+    --text: #eef2f7;
+    --gedimmt: #9aa6b8;
+    --linie: #26354a;
+    --akzent: #5aa2ff;
+    --akzent-text: #06101f;
+    --akzent-weich: #1b3150;
+    --warnung: #fbbf24;
+    --warnung-weich: #3a2c0a;
+    --gefahr: #ff7a7f;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 17px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+p { margin: 0; }
+
+.ergebnis {
+  background: var(--akzent);
+  color: var(--akzent-text);
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+}
+.ergebnis .label { font-size: 15px; opacity: .85; }
+.ergebnis .stunden {
+  font-size: 72px;
+  font-weight: 700;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+.ergebnis .fertig { font-size: 19px; font-weight: 600; }
+.ergebnis .hinweis {
+  margin-top: 10px;
+  background: var(--warnung-weich);
+  color: var(--warnung);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.ergebnis .alternative { margin-top: 8px; font-size: 14px; opacity: .85; }
+
+.karte {
+  background: var(--karte);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feld-kopf { display: flex; justify-content: space-between; align-items: baseline; }
+.feld-titel { font-weight: 600; }
+.klein { font-size: 14px; color: var(--gedimmt); }
+
+input[type="time"], input[type="number"], input[type="text"] {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--linie);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-height: 44px;
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type="time"] { font-size: 28px; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+input:focus { outline: 2px solid var(--akzent); outline-offset: 1px; }
+
+.segmente { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--bg); border-radius: 10px; padding: 3px; gap: 3px; }
+.segmente button {
+  font: inherit; font-size: 15px;
+  border: 0; border-radius: 8px;
+  padding: 8px 4px; min-height: 40px;
+  background: transparent; color: var(--text);
+}
+.segmente button[aria-checked="true"] { background: var(--karte); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips button {
+  font: inherit; font-size: 15px;
+  border: 1px solid var(--linie); border-radius: 999px;
+  padding: 8px 14px; min-height: 40px;
+  background: var(--bg); color: var(--text);
+}
+.chips button[aria-pressed="true"] { background: var(--akzent-weich); border-color: var(--akzent); font-weight: 600; }
+.chips .leer { font-size: 14px; color: var(--gedimmt); }
+
+.dauer { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dauer label { display: flex; align-items: center; gap: 8px; }
+.dauer input { text-align: center; font-size: 22px; font-weight: 600; }
+
+.einstellungen .zeile { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 15px; }
+.einstellungen .zeile span { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.einstellungen input { width: 72px; text-align: center; }
+
+.link {
+  font: inherit; font-size: 15px;
+  background: none; border: 0; padding: 6px 0;
+  color: var(--akzent); cursor: pointer;
+}
+.knopf {
+  font: inherit; font-weight: 600;
+  width: 100%; min-height: 44px;
+  border: 0; border-radius: 12px;
+  background: var(--akzent); color: var(--akzent-text);
+}
+
+.installieren {
+  background: var(--karte);
+  border: 1px dashed var(--akzent);
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-size: 15px;
+}
+.teilen {
+  display: inline-block;
+  padding: 0 6px;
+  border: 1px solid var(--linie);
+  border-radius: 6px;
+}
+
+dialog {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  border: 0;
+  border-radius: 18px;
+  padding: 16px;
+  background: var(--karte);
+  color: var(--text);
+}
+dialog::backdrop { background: rgba(0,0,0,.4); }
+.dialog-kopf { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.dialog-kopf h2 { font-size: 20px; margin: 0; }
+.dialog-kopf .link { font-weight: 600; }
+
+.programm-liste { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.programm-liste li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "name loeschen" "zeit aktionen";
+  gap: 8px;
+  padding: 10px;
+  background: var(--bg);
+  border-radius: 12px;
+}
+.programm-liste .name { grid-area: name; min-width: 0; background: var(--karte); }
+.programm-liste .zeit { grid-area: zeit; display: flex; align-items: center; gap: 6px; font-size: 15px; }
+.programm-liste .zeit input { width: 52px; text-align: center; padding: 8px 4px; background: var(--karte); }
+.programm-liste .aktionen { grid-area: aktionen; display: flex; gap: 4px; align-items: center; }
+.programm-liste .aktionen button, .programm-liste .loeschen {
+  font: inherit; font-size: 16px;
+  min-width: 40px; min-height: 40px;
+  border: 1px solid var(--linie); border-radius: 10px;
+  background: var(--karte); color: var(--text);
+}
+.programm-liste button:disabled { opacity: .35; }
+.programm-liste .loeschen { grid-area: loeschen; color: var(--gefahr); }
+.programm-liste .loeschen.bestaetigen { width: auto; padding: 0 10px; background: var(--gefahr); color: #fff; border-color: var(--gefahr); font-size: 14px; }

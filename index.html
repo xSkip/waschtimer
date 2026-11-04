@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>WaschTimer</title>
+  <meta name="description" content="Berechnet die Startverzögerung der Waschmaschine in ganzen Stunden.">
+  <meta name="theme-color" content="#1d6fd8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f1724" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="WaschTimer">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <section class="ergebnis" aria-live="polite">
+      <p class="label">Startverzögerung einstellen</p>
+      <p class="stunden" id="stunden">– h</p>
+      <p class="fertig" id="fertig"></p>
+      <p class="hinweis" id="hinweis" hidden></p>
+      <p class="alternative" id="alternative" hidden></p>
+    </section>
+
+    <section class="karte">
+      <label class="feld-titel" for="endzeit">Fertig sein um</label>
+      <input type="time" id="endzeit" value="17:30" required>
+      <div class="segmente" role="radiogroup" aria-label="Tag">
+        <button type="button" role="radio" data-tag="0">Heute</button>
+        <button type="button" role="radio" data-tag="1">Morgen</button>
+        <button type="button" role="radio" data-tag="2">Übermorgen</button>
+      </div>
+      <p class="klein" id="tag-info"></p>
+    </section>
+
+    <section class="karte">
+      <div class="feld-kopf">
+        <span class="feld-titel">Programmdauer</span>
+        <button type="button" class="link" id="programme-bearbeiten">Programme bearbeiten</button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="dauer">
+        <label><input type="number" id="dauer-h" inputmode="numeric" min="0" max="12" value="3"> <span>Std.</span></label>
+        <label><input type="number" id="dauer-m" inputmode="numeric" min="0" max="59" value="0"> <span>Min.</span></label>
+      </div>
+    </section>
+
+    <section class="karte">
+      <div class="feld-kopf">
+        <label class="feld-titel" for="startzeit">Startzeit</label>
+        <button type="button" class="link" id="jetzt">Jetzt</button>
+      </div>
+      <input type="time" id="startzeit" required>
+      <p class="klein" id="start-info"></p>
+    </section>
+
+    <section class="karte einstellungen">
+      <span class="feld-titel">Einstellungen</span>
+      <label class="zeile">Reserve für längere Laufzeit
+        <span><input type="number" id="reserve" inputmode="numeric" min="0" max="120" value="10"> Min.</span>
+      </label>
+      <label class="zeile">Maximale Startverzögerung
+        <span><input type="number" id="max" inputmode="numeric" min="1" max="99" value="24"> h</span>
+      </label>
+    </section>
+
+    <aside class="installieren" id="installieren" hidden>
+      <p><strong>Als App installieren:</strong> In Safari auf <span class="teilen" aria-label="Teilen">Teilen</span> tippen, dann <strong>„Zum Home-Bildschirm“</strong> und <strong>„Hinzufügen“</strong>.</p>
+      <button type="button" class="link" id="installieren-zu">Ausblenden</button>
+    </aside>
+  </main>
+
+  <dialog id="programme-dialog">
+    <form method="dialog" class="dialog-kopf">
+      <h2>Programme</h2>
+      <button class="link" value="fertig">Fertig</button>
+    </form>
+    <ul class="programm-liste" id="programm-liste"></ul>
+    <button type="button" class="knopf" id="programm-neu">+ Programm hinzufügen</button>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
