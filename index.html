@@ -25,7 +25,6 @@
       <p class="hinweis" id="hinweis" hidden></p>
       <p class="alternative" id="alternative" hidden></p>
       <button type="button" class="kalender-knopf" id="kalender">Im Kalender eintragen</button>
-      <p class="alternative" id="kalender-info" hidden></p>
     </section>
 
     <section class="karte">
@@ -74,6 +73,7 @@
       <p><strong>Als App installieren:</strong> In Safari auf <span class="teilen" aria-label="Teilen">Teilen</span> tippen, dann <strong>„Zum Home-Bildschirm“</strong> und <strong>„Hinzufügen“</strong>.</p>
       <button type="button" class="link" id="installieren-zu">Ausblenden</button>
     </aside>
+      <p class="version klein" id="version"></p>
   </main>
 
   <dialog id="programme-dialog">
@@ -83,6 +83,21 @@
     </form>
     <ul class="programm-liste" id="programm-liste"></ul>
     <button type="button" class="knopf" id="programm-neu">+ Programm hinzufügen</button>
+  </dialog>
+
+  <dialog id="kalender-dialog">
+    <form method="dialog" class="dialog-kopf">
+      <h2>Im Kalender eintragen</h2>
+      <button class="link" value="zu">Schließen</button>
+    </form>
+    <p class="termin" id="kalender-termin"></p>
+    <div class="kalender-wege">
+      <a class="knopf" id="weg-apple" href="#" target="_self">Apple Kalender</a>
+      <button type="button" class="knopf zweit" id="weg-teilen" hidden>Teilen …</button>
+      <a class="knopf zweit" id="weg-google" href="#" target="_blank" rel="noopener">Google Kalender</a>
+      <a class="knopf zweit" id="weg-datei" href="#" download="waesche-fertig.ics">Datei herunterladen (.ics)</a>
+    </div>
+    <p class="klein" id="kalender-info"></p>
   </dialog>
 
   <script type="module" src="app.js"></script>

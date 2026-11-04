@@ -205,3 +205,11 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
 .programm-liste button:disabled { opacity: .35; }
 .programm-liste .loeschen { grid-area: loeschen; color: var(--gefahr); }
 .programm-liste .loeschen.bestaetigen { width: auto; padding: 0 10px; background: var(--gefahr); color: #fff; border-color: var(--gefahr); font-size: 14px; }
+
+.knopf { display: flex; align-items: center; justify-content: center; text-decoration: none; text-align: center; padding: 0 12px; }
+.knopf.zweit { background: var(--bg); color: var(--akzent); border: 1px solid var(--linie); }
+.kalender-wege { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+.termin { font-size: 17px; font-weight: 600; }
+.version { text-align: center; }
+
+[hidden] { display: none !important; }
