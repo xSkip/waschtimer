@@ -12,7 +12,7 @@ Fertig      = Startzeit + Verzögerung + Dauer
 
 - Es wird immer **abgerundet**, die Wäsche ist also nie zu spät fertig.
 - Die **Reserve** (Standard 10 Min.) fängt Programme ab, die etwas länger laufen als angezeigt.
-- Die **maximale Verzögerung** (Standard 24 h) ist einstellbar.
+- Die **maximale Verzögerung** (Standard 23 h) ist einstellbar.
 - Gerechnet wird mit echten Zeitpunkten, die Zeitumstellung stimmt also automatisch.
 
 ## Dateien
@@ -21,6 +21,7 @@ Fertig      = Startzeit + Verzögerung + Dauer
 | --- | --- |
 | `index.html`, `styles.css`, `app.js` | Oberfläche, Programmverwaltung, Einstellungen |
 | `calc.js` | Rechenlogik (ohne Abhängigkeiten, getestet) |
+| `ics.js` | Kalendereintrag (.ics) für den Fertig-Zeitpunkt, mit Erinnerung |
 | `manifest.webmanifest`, `icons/` | Name und Symbol am Home-Bildschirm |
 | `sw.js` | Service Worker, damit die App offline startet |
 

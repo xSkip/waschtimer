@@ -1,6 +1,6 @@
 // Service Worker: speichert alle Dateien, damit die App auch offline startet.
 // Bei jeder Änderung an den Dateien VERSION erhöhen, dann holt sich die App das Update.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = `waschtimer-${VERSION}`;
 const DATEIEN = [
   './',
@@ -8,6 +8,7 @@ const DATEIEN = [
   './styles.css',
   './app.js',
   './calc.js',
+  './ics.js',
   './manifest.webmanifest',
   './icons/icon.svg',
   './icons/apple-touch-icon.png',
