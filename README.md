@@ -21,7 +21,7 @@ Fertig      = Startzeit + Verzögerung + Dauer
 | --- | --- |
 | `index.html`, `styles.css`, `app.js` | Oberfläche, Programmverwaltung, Einstellungen |
 | `calc.js` | Rechenlogik (ohne Abhängigkeiten, getestet) |
-| `ics.js` | Kalendereintrag (.ics) für den Fertig-Zeitpunkt, mit Erinnerung |
+| `ics.js` | Kalendereintrag (.ics) für den Fertig-Zeitpunkt, mit Erinnerung. Am iPhone liefert der Service Worker ihn unter `termin.ics` aus, weil iOS Blob- und data-Links blockiert |
 | `manifest.webmanifest`, `icons/` | Name und Symbol am Home-Bildschirm |
 | `sw.js` | Service Worker, damit die App offline startet |
 

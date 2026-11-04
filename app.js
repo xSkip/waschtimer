@@ -208,17 +208,40 @@ function kalenderEintragOeffnen() {
     titel: 'Wäsche fertig',
     beschreibung: `${startText} Programmdauer ${dauerText(dauerMin)}.`,
   });
-  const datei = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-  const url = URL.createObjectURL(datei);
+  if (istIOS) {
+    kalenderUeberServiceWorker(ics);
+    return;
+  }
+  // Andere Geräte: Datei herunterladen und mit dem Kalender öffnen.
+  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
   const a = document.createElement('a');
   a.href = url;
-  // iPhone/iPad: ohne download-Attribut öffnet Safari die Kalendervorschau mit „Hinzufügen“.
-  // Andere Geräte: Datei herunterladen und mit dem Kalender öffnen.
-  if (!istIOS) a.download = 'waesche-fertig.ics';
+  a.download = 'waesche-fertig.ics';
   document.body.append(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+// iPhone/iPad: iOS blockiert Blob- und data:-Links für Kalenderdateien, vor allem in der
+// Home-Bildschirm-App. Was funktioniert, ist eine echte https-Adresse derselben Seite, die
+// text/calendar liefert. GitHub Pages kann das nicht dynamisch, deshalb beantwortet der
+// Service Worker die Adresse ./termin.ics?d=… mit dem übergebenen Termin.
+async function kalenderUeberServiceWorker(ics) {
+  const info = $('kalender-info');
+  info.hidden = true;
+  const ziel = `./termin.ics?d=${encodeURIComponent(ics)}`;
+  try {
+    // Prüfen, ob der aktuelle Service Worker die Adresse schon kennt (nach einem Update evtl. noch nicht).
+    const probe = await fetch('./termin.ics?probe=1', { cache: 'no-store' });
+    if (!(probe.headers.get('content-type') || '').startsWith('text/calendar')) throw new Error('alt');
+  } catch {
+    navigator.serviceWorker?.getRegistration().then((reg) => reg?.update()).catch(() => {});
+    info.textContent = 'Die App wird gerade aktualisiert. Bitte schließe sie ganz, öffne sie neu und tippe noch einmal.';
+    info.hidden = false;
+    return;
+  }
+  window.location.href = ziel;
 }
 
 $('kalender').addEventListener('click', kalenderEintragOeffnen);
